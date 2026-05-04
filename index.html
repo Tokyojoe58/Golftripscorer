@@ -338,7 +338,7 @@
       <div class="sync-dot" id="syncDot"></div>
       <span id="syncText">Connecting…</span>
     </div>
-    <button class="mode-badge editor" id="modeBtn" onclick="toggleMode()">✏️ Editor</button>
+    <button class="mode-badge viewer" id="modeBtn" onclick="toggleMode()">👁 Viewer</button>
   </div>
 </header>
 
@@ -373,7 +373,7 @@ var COMPS = [
   { id: 'ntp', name: 'Nearest the Pin', icon: '🎯' },
 ];
 
-var isEditor = true;   // toggle with the button
+var isEditor = false;  // start in viewer mode; password required to edit
 var pollTimer = null;
 var saveTimer = null;
 var currentTab = 'setup';
@@ -465,18 +465,29 @@ function stopPolling() {
 }
 
 function toggleMode() {
-  isEditor = !isEditor;
-  var btn = document.getElementById('modeBtn');
   if (isEditor) {
-    btn.textContent = '✏️ Editor';
-    btn.className = 'mode-badge editor';
-    document.body.classList.remove('viewer-mode');
-  } else {
+    // Lock back to viewer
+    isEditor = false;
+    var btn = document.getElementById('modeBtn');
     btn.textContent = '👁 Viewer';
     btn.className = 'mode-badge viewer';
     document.body.classList.add('viewer-mode');
+    renderCurrentTab();
+  } else {
+    // Ask for password to unlock editor
+    var pwd = prompt('Enter editor password:');
+    if (pwd === null) return; // cancelled
+    if (pwd === 'Tiger') {
+      isEditor = true;
+      var btn = document.getElementById('modeBtn');
+      btn.textContent = '✏️ Editor';
+      btn.className = 'mode-badge editor';
+      document.body.classList.remove('viewer-mode');
+      renderCurrentTab();
+    } else {
+      alert('Incorrect password.');
+    }
   }
-  renderCurrentTab();
 }
 
 // ── UTILS ────────────────────────────────────────────────────────────────────
@@ -763,6 +774,8 @@ function resetAll() {
 
 // ── INIT ─────────────────────────────────────────────────────────────────────
 async function init() {
+  // Start in viewer mode by default
+  document.body.classList.add('viewer-mode');
   await loadFromSupabase();
   renderSetup();
   startPolling();
