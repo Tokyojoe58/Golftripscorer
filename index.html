@@ -305,6 +305,80 @@
     .nine-input { width: 54px; font-size: 15px; }
     .grid2, .grid4 { grid-template-columns: 1fr 1fr; }
   }
+
+  /* Tee Times */
+  .tee-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+  .tee-slot {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(201,168,76,0.2);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .tee-slot-header {
+    background: var(--rough);
+    padding: 10px 16px;
+    font-family: 'Playfair Display', serif;
+    font-size: 15px;
+    color: var(--gold);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .tee-slot-body { padding: 12px; }
+  .tee-player-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--cream);
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .tee-player-row:last-child { border-bottom: none; }
+  .tee-empty {
+    font-size: 12px;
+    color: rgba(245,240,232,0.25);
+    font-style: italic;
+    padding: 6px 0;
+  }
+  .round-tee-section { margin-bottom: 28px; }
+  .round-tee-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    color: var(--gold);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  .round-tee-title span {
+    font-size: 13px;
+    font-family: 'Barlow Condensed', sans-serif;
+    color: rgba(245,240,232,0.4);
+    font-weight: 400;
+  }
+  .assign-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .assign-row:last-child { border-bottom: none; }
+  .assign-name {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
 </style>
 </head>
 <body>
@@ -330,6 +404,7 @@
   <button class="tab" onclick="show('round1')">Round 1</button>
   <button class="tab" onclick="show('round2')">Round 2</button>
   <button class="tab" onclick="show('round3')">Round 3</button>
+  <button class="tab" onclick="show('teetimes')">🕐 Tee Times</button>
   <button class="tab" onclick="show('leaderboard')">🏆 Leaderboard</button>
 </div>
 
@@ -338,6 +413,7 @@
   <div id="sec-round1"      class="section"></div>
   <div id="sec-round2"      class="section"></div>
   <div id="sec-round3"      class="section"></div>
+  <div id="sec-teetimes"    class="section"></div>
   <div id="sec-leaderboard" class="section"></div>
 </div>
 
@@ -369,7 +445,9 @@ function blankState() {
     courses: [0,1,2].map(function(){ return { name: '', par: '', rating: '', slope: '' }; }),
     // scores[r][pi] = { front, back }
     scores: [0,1,2].map(function(){ return Array(MAX).fill(0).map(function(){ return { front:'', back:'' }; }); }),
-    comps:  [{ ld:'', ntp:'' }, { ld:'', ntp:'' }, { ld:'', ntp:'' }]
+    comps:  [{ ld:'', ntp:'' }, { ld:'', ntp:'' }, { ld:'', ntp:'' }],
+    // tees[r][playerIdx] = slot number 1-4 or ''
+    tees: [0,1,2].map(function(){ return Array(10).fill(''); })
   };
 }
 
@@ -399,6 +477,7 @@ async function loadFromSupabase() {
       if (!d.courses) {
         d.courses = [0,1,2].map(function(){ return { name:'', par:'', rating:'', slope:'' }; });
       }
+      if (!d.tees) d.tees = [0,1,2].map(function(){ return Array(10).fill(''); });
       S = d;
     }
     setSyncStatus('ok','Live');
@@ -658,6 +737,77 @@ function setScore(r, pi, half, val) {
   if (el) { el.textContent = t!==null?t:'—'; el.className='pts-badge'+(t===null?' pts-dim':''); }
 }
 
+
+// ── TEE TIMES ─────────────────────────────────────────────────────────────────
+var MAX_SLOTS = 4;
+
+function renderTeeTimes() {
+  var players = activePlayers();
+  var el = document.getElementById('sec-teetimes');
+  if (!players.length) {
+    el.innerHTML = '<div class="empty"><div class="eicon">🕐</div>Add players in Setup first</div>';
+    return;
+  }
+
+  var html = '<div style="margin-bottom:20px">' +
+    '<div style="font-family:'Playfair Display',serif;font-size:26px;color:var(--gold);font-weight:900;margin-bottom:4px">Tee Times</div>' +
+    '<div style="font-size:13px;color:rgba(245,240,232,0.4)">Assign each player to a tee slot for each round. Up to 4 slots per round.</div>' +
+  '</div>';
+
+  for (var r = 0; r < 3; r++) {
+    var cn = S.courses[r].name || ('Round ' + (r+1));
+
+    // Assignment card (editor)
+    var assignRows = players.map(function(p) {
+      var cur = S.tees[r][p.idx] || '';
+      var opts = '<option value="">—</option>';
+      for (var s=1; s<=MAX_SLOTS; s++) {
+        opts += '<option value="'+s+'"'+(cur==s?' selected':'')+'>Tee '+s+'</option>';
+      }
+      return '<div class="assign-row">' +
+        '<div class="assign-name"><div class="avatar">'+p.name[0].toUpperCase()+'</div>'+esc(p.name)+'</div>' +
+        '<select style="width:100px" onchange="setTee('+r+','+p.idx+',this.value)">'+opts+'</select>' +
+      '</div>';
+    }).join('');
+
+    // Visual tee slot cards
+    var slotCards = '';
+    for (var s=1; s<=MAX_SLOTS; s++) {
+      var slotPlayers = players.filter(function(p){ return String(S.tees[r][p.idx])===String(s); });
+      var playerItems = slotPlayers.length
+        ? slotPlayers.map(function(p){
+            return '<div class="tee-player-row"><div class="avatar">'+p.name[0].toUpperCase()+'</div>'+esc(p.name)+'</div>';
+          }).join('')
+        : '<div class="tee-empty">No players assigned</div>';
+      slotCards += '<div class="tee-slot">' +
+        '<div class="tee-slot-header">⛳ Tee Slot ' + s + '</div>' +
+        '<div class="tee-slot-body">'+playerItems+'</div>' +
+      '</div>';
+    }
+
+    html += '<div class="round-tee-section">' +
+      '<div class="round-tee-title">'+esc(cn)+' <span>Round '+(r+1)+'</span></div>' +
+      '<div class="card" style="margin-bottom:14px">' +
+        '<h2 style="margin-bottom:14px;font-size:15px">Assign Players</h2>' +
+        assignRows +
+      '</div>' +
+      '<div class="tee-grid">'+slotCards+'</div>' +
+    '</div>';
+
+    if (r < 2) html += '<hr class="divider">';
+  }
+
+  el.innerHTML = html;
+}
+
+function setTee(r, pi, val) {
+  if (!isEditor) return;
+  S.tees[r][pi] = val;
+  save();
+  // re-render tee slot cards live without full re-render
+  renderTeeTimes();
+}
+
 // ── LEADERBOARD ───────────────────────────────────────────────────────────────
 function renderLeaderboard() {
   var players = activePlayers();
@@ -812,11 +962,12 @@ function renderCurrentTab() {
   else if (currentTab==='round1')      renderRound(0);
   else if (currentTab==='round2')      renderRound(1);
   else if (currentTab==='round3')      renderRound(2);
+  else if (currentTab==='teetimes')    renderTeeTimes();
   else if (currentTab==='leaderboard') renderLeaderboard();
 }
 function show(name) {
   currentTab = name;
-  var tabs = ['setup','round1','round2','round3','leaderboard'];
+  var tabs = ['setup','round1','round2','round3','teetimes','leaderboard'];
   document.querySelectorAll('.tab').forEach(function(t,i){ t.classList.toggle('active',tabs[i]===name); });
   document.querySelectorAll('.section').forEach(function(s){ s.classList.remove('active'); });
   document.getElementById('sec-'+name).classList.add('active');
