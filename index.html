@@ -84,7 +84,7 @@
     color: rgba(245,240,232,0.5); text-align: center; display: none;
   }
   body.viewer-mode .viewer-banner { display: block; }
-  body.viewer-mode input, body.viewer-mode select { pointer-events: none; opacity: 0.85; }
+  body.viewer-mode input, body.viewer-mode select { pointer-events: none; opacity: 0.6; }
   body.viewer-mode .btn { pointer-events: none; opacity: 0.5; }
 
   .tabs {
@@ -116,13 +116,13 @@
     text-transform: uppercase; color: rgba(245,240,232,0.55); margin-bottom: 5px;
   }
   input[type="text"], input[type="number"] {
-    width: 100%; background: #ffffff;
-    border: 2px solid var(--gold); border-radius: 8px;
-    padding: 10px 14px; color: #111111;
-    font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 700;
+    width: 100%; background: rgba(255,255,255,0.95);
+    border: 2px solid rgba(201,168,76,0.5); border-radius: 8px;
+    padding: 9px 12px; color: #1a3a2a;
+    font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 600;
   }
-  input[type="text"]:focus, input[type="number"]:focus { outline: none; border-color: var(--gold-light); box-shadow: 0 0 0 4px rgba(201,168,76,0.4); }
-  input[type="text"]::placeholder, input[type="number"]::placeholder { color: #999999; font-weight: 400; }
+  input[type="text"]:focus, input[type="number"]:focus { outline: none; border-color: var(--gold); background: #fff; box-shadow: 0 0 0 3px rgba(201,168,76,0.3); }
+  input[type="text"]::placeholder, input[type="number"]::placeholder { color: rgba(26,58,42,0.4); font-weight: 400; }
   input[type="number"] { -moz-appearance: textfield; }
   input[type="number"]::-webkit-outer-spin-button,
   input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
@@ -193,15 +193,15 @@
   }
 
   .nine-input {
-    width: 70px; background: #ffffff;
-    border: 2px solid var(--gold); border-radius: 8px;
-    padding: 8px 10px; text-align: center; color: #111111;
-    font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 800;
+    width: 66px; background: rgba(255,255,255,0.95);
+    border: 2px solid rgba(201,168,76,0.5); border-radius: 8px;
+    padding: 7px 8px; text-align: center; color: #1a3a2a;
+    font-family: 'Barlow Condensed', sans-serif; font-size: 17px; font-weight: 700;
     -moz-appearance: textfield;
   }
   .nine-input::-webkit-outer-spin-button, .nine-input::-webkit-inner-spin-button { -webkit-appearance: none; }
-  .nine-input:focus { outline: none; border-color: var(--gold-light); background: #fffef0; box-shadow: 0 0 0 4px rgba(201,168,76,0.4); }
-  .nine-input::placeholder { color: #aaaaaa; font-size: 14px; }
+  .nine-input:focus { outline: none; border-color: var(--gold); background: #fff; box-shadow: 0 0 0 3px rgba(201,168,76,0.3); }
+  .nine-input::placeholder { color: rgba(26,58,42,0.35); font-size: 13px; }
 
   .pts-badge {
     display: inline-block;
@@ -222,15 +222,15 @@
   }
   .comp-card h3 { font-size: 14px; margin-bottom: 10px; }
   select {
-    width: 100%; background: #ffffff;
-    border: 2px solid var(--gold); border-radius: 8px;
-    padding: 9px 28px 9px 12px; color: #111111;
-    font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 700;
+    width: 100%; background: rgba(255,255,255,0.95);
+    border: 2px solid rgba(201,168,76,0.5); border-radius: 8px;
+    padding: 8px 28px 8px 10px; color: #1a3a2a;
+    font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 600;
     appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%231a3a2a' stroke-width='2' fill='none'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%232d5a3d' stroke-width='2' fill='none'/%3E%3C/svg%3E");
     background-repeat: no-repeat; background-position: right 10px center;
   }
-  select:focus { outline: none; border-color: var(--gold-light); box-shadow: 0 0 0 4px rgba(201,168,76,0.4); }
+  select:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,168,76,0.3); }
   select option { background: var(--green-deep); color: var(--cream); }
 
   /* Leaderboard */
