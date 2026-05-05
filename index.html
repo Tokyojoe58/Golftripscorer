@@ -405,6 +405,7 @@
   <button class="tab" onclick="show('round2')">Round 2</button>
   <button class="tab" onclick="show('round3')">Round 3</button>
   <button class="tab" onclick="show('teetimes')">🕐 Tee Times</button>
+  <button class="tab" onclick="show('handicaps')">📋 Handicaps</button>
   <button class="tab" onclick="show('leaderboard')">🏆 Leaderboard</button>
 </div>
 
@@ -414,6 +415,7 @@
   <div id="sec-round2"      class="section"></div>
   <div id="sec-round3"      class="section"></div>
   <div id="sec-teetimes"    class="section"></div>
+  <div id="sec-handicaps"   class="section"></div>
   <div id="sec-leaderboard" class="section"></div>
 </div>
 
@@ -808,6 +810,48 @@ function setTee(r, pi, val) {
   renderTeeTimes();
 }
 
+
+// ── HANDICAPS ──────────────────────────────────────────────────────────────────
+function renderHandicaps() {
+  var players = activePlayers();
+  var el = document.getElementById('sec-handicaps');
+  if (!players.length) {
+    el.innerHTML = '<div class="empty"><div class="eicon">📋</div>Add players in Setup first</div>';
+    return;
+  }
+
+  var courseHeaders = [0,1,2].map(function(r){
+    return '<th>'+(S.courses[r].name||'Round '+(r+1))+'</th>';
+  }).join('');
+
+  var hcapRows = players.map(function(p) {
+    var phs = [0,1,2].map(function(r){
+      var ph = playingHcap(p.hcapIndex, S.courses[r]);
+      return ph!==null ? ph : '—';
+    });
+    return '<tr>' +
+      '<td><div class="player-cell"><div class="avatar">'+p.name[0].toUpperCase()+'</div>'+esc(p.name)+'</div></td>' +
+      '<td>'+esc(String(p.hcapIndex||'—'))+'</td>' +
+      '<td>'+phs[0]+'</td><td>'+phs[1]+'</td><td>'+phs[2]+'</td>' +
+    '</tr>';
+  }).join('');
+
+  el.innerHTML =
+    '<div style="margin-bottom:20px">' +
+      '<div style="font-family:&apos;Playfair Display&apos;,serif;font-size:28px;color:var(--gold);font-weight:900">Handicap Reference</div>' +
+      '<div style="font-size:13px;color:rgba(245,240,232,0.5);margin-top:4px">Playing handicaps calculated using the WHS formula for each course</div>' +
+    '</div>' +
+    '<div class="lb-card"><h2>📋 Playing Handicaps</h2>' +
+    '<div style="overflow-x:auto">' +
+      '<table class="hcap-table"><thead><tr>' +
+        '<th>Player</th><th>HC Index</th>' + courseHeaders +
+      '</tr></thead><tbody>'+hcapRows+'</tbody></table>' +
+    '</div></div>' +
+    '<div style="font-size:12px;color:rgba(245,240,232,0.4);margin-top:12px;padding:12px 16px;background:rgba(255,255,255,0.03);border-radius:8px;border:1px solid rgba(201,168,76,0.15)">' +
+      '📐 Formula: Playing Handicap = Handicap Index × (Slope ÷ 113) + (Course Rating − Par)' +
+    '</div>';
+}
+
 // ── LEADERBOARD ───────────────────────────────────────────────────────────────
 function renderLeaderboard() {
   var players = activePlayers();
@@ -945,13 +989,7 @@ function renderLeaderboard() {
     '<div style="font-family:\'Playfair Display\',serif;font-size:17px;color:var(--gold);margin-bottom:12px">🏅 Side Competition Winners</div>' +
     '<div class="comp-results-grid">'+compBlocks+'</div>' +
 
-    '<hr class="divider">' +
-    '<div class="lb-card"><h2>📋 Handicap Reference</h2>' +
-    '<div style="overflow-x:auto">' +
-      '<table class="hcap-table"><thead><tr>' +
-        '<th>Player</th><th>HC Index</th>' + courseHeaders +
-      '</tr></thead><tbody>'+hcapRows+'</tbody></table>' +
-    '</div></div>' +
+
 
     '<div class="last-updated">Last refreshed at '+now+' · updates every 10 seconds</div>';
 }
@@ -963,11 +1001,12 @@ function renderCurrentTab() {
   else if (currentTab==='round2')      renderRound(1);
   else if (currentTab==='round3')      renderRound(2);
   else if (currentTab==='teetimes')    renderTeeTimes();
+  else if (currentTab==='handicaps')   renderHandicaps();
   else if (currentTab==='leaderboard') renderLeaderboard();
 }
 function show(name) {
   currentTab = name;
-  var tabs = ['setup','round1','round2','round3','teetimes','leaderboard'];
+  var tabs = ['setup','round1','round2','round3','teetimes','handicaps','leaderboard'];
   document.querySelectorAll('.tab').forEach(function(t,i){ t.classList.toggle('active',tabs[i]===name); });
   document.querySelectorAll('.section').forEach(function(s){ s.classList.remove('active'); });
   document.getElementById('sec-'+name).classList.add('active');
