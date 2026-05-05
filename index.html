@@ -483,7 +483,7 @@ async function loadFromSupabase() {
     setSyncStatus('ok','Live');
   } catch(e) {
     console.error(e);
-    setSyncStatus('error','Offline');
+    setSyncStatus('error', e.message ? e.message.substring(0,40) : 'Offline');
   }
 }
 async function saveToSupabase() {
