@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sussex Nomads Golf Trip</title>
+<title>Wandering Hopefully Golf</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Barlow+Condensed:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -385,7 +385,7 @@
 
 <header>
   <div class="header-title">
-    Sussex Nomads Golf Trip
+    Wandering Hopefully Golf
     <span>Stableford Scorer</span>
   </div>
   <div class="header-right">
@@ -608,7 +608,7 @@ function renderSetup() {
       '<h2>🏌️ Trip Details</h2>' +
       '<div class="grid2">' +
         '<div><label>Trip Name</label>' +
-          '<input type="text" placeholder="Sussex Nomads 2025" value="' + esc(S.trip) + '" oninput="S.trip=this.value;save()"></div>' +
+          '<input type="text" placeholder="Wandering Hopefully Golf 2025" value="' + esc(S.trip) + '" oninput="S.trip=this.value;save()"></div>' +
         '<div><label>Location / Year</label>' +
           '<input type="text" placeholder="Portugal, 2025" value="' + esc(S.loc) + '" oninput="S.loc=this.value;save()"></div>' +
       '</div>' +
@@ -986,7 +986,7 @@ function renderLeaderboard() {
     });
   }
 
-  var tripTitle = [S.trip,S.loc].filter(Boolean).join(' · ') || 'Sussex Nomads Golf Trip';
+  var tripTitle = [S.trip,S.loc].filter(Boolean).join(' · ') || 'Wandering Hopefully Golf';
   var now = new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
 
   el.innerHTML =
