@@ -428,8 +428,9 @@ var EDITOR_PWD = 'Tiger';
 
 var MAX = 10;
 var COMPS = [
-  { id: 'ld',  name: 'Longest Drive',   icon: '💥' },
-  { id: 'ntp', name: 'Nearest the Pin', icon: '🎯' },
+  { id: 'ld',   name: 'Longest Drive',     icon: '💥' },
+  { id: 'ntp1', name: 'Nearest the Pin 1', icon: '🎯' },
+  { id: 'ntp2', name: 'Nearest the Pin 2', icon: '📍' },
 ];
 
 var isEditor = false;
@@ -447,7 +448,9 @@ function blankState() {
     courses: [0,1,2].map(function(){ return { name: '', par: '', rating: '', slope: '' }; }),
     // scores[r][pi] = { front, back }
     scores: [0,1,2].map(function(){ return Array(MAX).fill(0).map(function(){ return { front:'', back:'' }; }); }),
-    comps:  [{ ld:'', ntp:'' }, { ld:'', ntp:'' }, { ld:'', ntp:'' }],
+    comps:  [{ ld:'', ntp1:'', ntp2:'' }, { ld:'', ntp1:'', ntp2:'' }, { ld:'', ntp1:'', ntp2:'' }],
+    // compHoles[r] = { ld, ntp1, ntp2 } — which hole each comp is on
+    compHoles: [{ ld:'', ntp1:'', ntp2:'' }, { ld:'', ntp1:'', ntp2:'' }, { ld:'', ntp1:'', ntp2:'' }],
     // tees[r][playerIdx] = slot number 1-4 or ''
     tees: [0,1,2].map(function(){ return Array(10).fill(''); })
   };
@@ -480,6 +483,11 @@ async function loadFromSupabase() {
         d.courses = [0,1,2].map(function(){ return { name:'', par:'', rating:'', slope:'' }; });
       }
       if (!d.tees) d.tees = [0,1,2].map(function(){ return Array(10).fill(''); });
+      if (!d.compHoles) d.compHoles = [{ ld:'', ntp1:'', ntp2:'' }, { ld:'', ntp1:'', ntp2:'' }, { ld:'', ntp1:'', ntp2:'' }];
+      // migrate old ntp to ntp1
+      if (d.comps && d.comps[0] && d.comps[0].ntp !== undefined) {
+        d.comps = d.comps.map(function(co){ return { ld: co.ld||'', ntp1: co.ntp||'', ntp2: '' }; });
+      }
       S = d;
     }
     setSyncStatus('ok','Live');
@@ -691,10 +699,21 @@ function renderRound(r) {
   var compOpts = '<option value="">— select —</option>' +
     players.map(function(p){ return '<option value="'+esc(p.name)+'">'+esc(p.name)+'</option>'; }).join('');
   var compCards = COMPS.map(function(comp) {
-    var val = S.comps[r][comp.id]||'';
+    var val  = S.comps[r][comp.id] || '';
+    var hole = S.compHoles[r][comp.id] || '';
     var opts = compOpts.replace('value="'+val+'"','value="'+val+'" selected');
-    return '<div class="comp-card"><h3>'+comp.icon+' '+comp.name+'</h3>' +
-      '<select onchange="S.comps['+r+'][\''+comp.id+'\']=this.value;save()">'+opts+'</select></div>';
+    var cid  = comp.id;
+    return '<div class="comp-card">' +
+      '<h3>'+comp.icon+' '+comp.name+'</h3>' +
+      '<div style="margin-bottom:8px">' +
+        '<label style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:rgba(245,240,232,0.5);display:block;margin-bottom:4px">Hole</label>' +
+        '<input type="number" min="1" max="18" placeholder="e.g. 7" value="'+esc(hole)+'"' +
+        ' style="width:80px;margin-bottom:10px"' +
+        ' oninput="S.compHoles['+r+'][this.dataset.cid]=this.value;save()" data-cid="'+cid+'">' +
+      '</div>' +
+      '<label style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:rgba(245,240,232,0.5);display:block;margin-bottom:4px">Winner</label>' +
+      '<select onchange="S.comps['+r+'][this.dataset.cid]=this.value;save()" data-cid="'+cid+'">'+opts+'</select>' +
+    '</div>';
   }).join('');
 
   el.innerHTML =
@@ -953,13 +972,15 @@ function renderLeaderboard() {
   // Side comps
   var compBlocks = '';
   for (var r=0;r<3;r++) {
-    COMPS.forEach(function(c) {
-      var w=S.comps[r][c.id];
+    COMPS.forEach(function(comp) {
+      var w  = S.comps[r][comp.id];
+      var h  = S.compHoles[r] ? S.compHoles[r][comp.id] : '';
       var cn = S.courses[r].name || 'Round '+(r+1);
+      var holeLabel = h ? ' (Hole '+h+')' : '';
       compBlocks += '<div class="comp-result">' +
-        '<div class="icon">'+c.icon+'</div>' +
-        '<div class="cname">'+c.name+'</div>' +
-        '<div class="cround">'+esc(cn)+'</div>' +
+        '<div class="icon">'+comp.icon+'</div>' +
+        '<div class="cname">'+comp.name+'</div>' +
+        '<div class="cround">'+esc(cn)+esc(holeLabel)+'</div>' +
         '<div class="cwinner'+(w?'':' tbd')+'">'+(w?esc(w):'TBD')+'</div>' +
       '</div>';
     });
